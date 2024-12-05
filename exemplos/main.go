@@ -16,7 +16,8 @@ func main() {
 
 	marshallingAndUnmarshalling()
 	encondingAndDecoding()
-	roteador()
+	//roteador()
+	execCharles()
 }
 
 func marshallingAndUnmarshalling() {
@@ -125,4 +126,34 @@ func roteador() {
 
 	//run
 	http.ListenAndServe(":8080", router)
+}
+
+func execCharles() {
+	type Aluno struct {
+		Nome  string  `json:"nome"`
+		Idade int     `json:"idade"`
+		Nota  float64 `json:"nota"`
+	}
+
+	alunos := []Aluno{
+		{"Joao", 20, 8.5},
+		{"Maria", 22, 9.5},
+		{"Pedro", 19, 7.5},
+	}
+
+	file, err := os.Create("alunos.json")
+	if err != nil {
+		log.Fatalf("Erro ao criar arquivo %v", err)
+	}
+	defer file.Close()
+
+	encoder := json.NewEncoder(file)
+
+	for _, aluno := range alunos {
+		err := encoder.Encode(aluno)
+		if err != nil {
+			log.Fatalf("Erro ao codidficar aluno %v", err)
+		}
+	}
+	fmt.Println("Arquivo JSON criado com sucesso!")
 }
