@@ -157,3 +157,11 @@ func execCharles() {
 	}
 	fmt.Println("Arquivo JSON criado com sucesso!")
 }
+
+func metodoGet() {
+	router := chi.NewRouter()
+
+	router.Get("/health", func(w http.ResponseWriter, r *http.Request) {
+
+	})
+}

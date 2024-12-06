@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"sync"
 
 	"github.com/go-chi/chi/v5"
@@ -86,6 +87,45 @@ func (ps *ProdutoStore) BuscarProduto(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// BuscarProdutosPorPreco realiza a busca de produtos com preço maior que o valor priceGt.
+func (ps *ProdutoStore) BuscarProdutosPorPreco(w http.ResponseWriter, r *http.Request) {
+	priceGtStr := r.URL.Query().Get("priceGt") // Recupera o parâmetro priceGt
+	if priceGtStr == "" {
+		http.Error(w, "Parâmetro priceGt não fornecido", http.StatusBadRequest)
+		return
+	}
+
+	// Converte priceGt para float64
+	priceGt, err := strconv.ParseFloat(priceGtStr, 64)
+	if err != nil {
+		http.Error(w, "Valor de priceGt inválido", http.StatusBadRequest)
+		return
+	}
+
+	// Filtra os produtos cujo preço é maior que priceGt
+	ps.RLock()
+	defer ps.RUnlock()
+
+	var produtosFiltrados []Produto
+	for _, p := range ps.Produtos {
+		if p.Price > priceGt {
+			produtosFiltrados = append(produtosFiltrados, p)
+		}
+	}
+
+	// Se nenhum produto for encontrado, retorna um erro 404
+	if len(produtosFiltrados) == 0 {
+		http.Error(w, "Nenhum produto encontrado com preço superior a "+fmt.Sprintf("%.2f", priceGt), http.StatusNotFound)
+		return
+	}
+
+	// Retorna a lista de produtos filtrados
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(produtosFiltrados); err != nil {
+		http.Error(w, "Erro ao retornar produtos filtrados", http.StatusInternalServerError)
+	}
+}
+
 func main() {
 	// Inicializando o armazenamento de produtos
 	produtoStore := &ProdutoStore{}
@@ -103,8 +143,9 @@ func main() {
 	r.Use(middleware.Logger)
 
 	// Definindo rotas da API
-	r.Get("/produtos", produtoStore.ListarProdutos)    // Listar todos os produtos
-	r.Get("/produto/{id}", produtoStore.BuscarProduto) // Buscar produto por ID
+	r.Get("/produtos", produtoStore.ListarProdutos)                // Listar todos os produtos
+	r.Get("/produto/{id}", produtoStore.BuscarProduto)             // Buscar produto por ID
+	r.Get("/products/search", produtoStore.BuscarProdutosPorPreco) // Buscar produtos com preço maior que priceGt
 
 	// Iniciar o servidor
 	log.Println("Iniciando servidor na porta 8080...")
