@@ -149,13 +149,10 @@ func (c *ProductHandler) Search(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var filteredProducts []*model.Product
-	for _, product := range c.app.ServiceProducts.Storage.DB {
-		if product.Price > price {
-			filteredProducts = append(filteredProducts, product)
-		}
+	filteredProducts, err := c.app.ServiceProducts.Search(price)
+	if err != nil {
+		http.NotFound(w, r)
 	}
-
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(filteredProducts)
 }
