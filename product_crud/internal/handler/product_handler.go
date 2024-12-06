@@ -45,7 +45,7 @@ func NewProductHandler(app *application.ProductApplication) *ProductHandler {
 	return &ProductHandler{app}
 }
 
-func (c *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
+func (p *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var reqBody RequestBodyProduct
 	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
 		code := http.StatusBadRequest
@@ -70,7 +70,7 @@ func (c *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 		Price:        reqBody.Price,
 	}
 
-	productServ, err := c.app.Create(product)
+	productServ, err := p.app.Create(product)
 	if err != nil {
 		code := http.StatusBadRequest
 		body := &ResponseBodyProduct{
@@ -107,8 +107,8 @@ func (c *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(body)
 }
 
-func (c *ProductHandler) GetAll(w http.ResponseWriter, r *http.Request) {
-	products, err := c.app.GetAll()
+func (p *ProductHandler) GetAll(w http.ResponseWriter, r *http.Request) {
+	products, err := p.app.GetAll()
 	if err != nil {
 		code := http.StatusBadRequest
 		body := &ResponseBodyProduct{
@@ -130,7 +130,7 @@ func (c *ProductHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 func (c *ProductHandler) GetById(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 
-	product := c.app.ServiceProducts.Storage.DB[idStr]
+	product := c.app.GetById(idStr)
 	if product != nil {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(product)
@@ -140,7 +140,7 @@ func (c *ProductHandler) GetById(w http.ResponseWriter, r *http.Request) {
 	http.NotFound(w, r)
 }
 
-func (c *ProductHandler) Search(w http.ResponseWriter, r *http.Request) {
+func (p *ProductHandler) Search(w http.ResponseWriter, r *http.Request) {
 	priceStr := r.URL.Query().Get("price")
 	fmt.Println("pegou:" + priceStr)
 	price, err := strconv.ParseFloat(priceStr, 64)
@@ -149,10 +149,81 @@ func (c *ProductHandler) Search(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filteredProducts, err := c.app.ServiceProducts.Search(price)
+	filteredProducts, err := p.app.ServiceProducts.Search(price)
 	if err != nil {
 		http.NotFound(w, r)
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(filteredProducts)
+}
+
+func (p *ProductHandler) Update(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	var reqBody model.Product
+
+	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+		code := http.StatusBadRequest
+		body := &ResponseBodyProduct{
+			Message: "Bad Request : invalid request body",
+			Data:    nil,
+			Error:   true,
+		}
+
+		w.WriteHeader(code)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(body)
+	}
+
+	productServ := p.app.Update(idStr, reqBody)
+
+	dt := Data{
+		Id:           productServ.Id,
+		Name:         productServ.Name,
+		Code_value:   productServ.Code_value,
+		Is_published: productServ.Is_published,
+		Expiration:   productServ.Expiration,
+		Quantity:     productServ.Quantity,
+		Price:        productServ.Price,
+	}
+
+	code := http.StatusCreated
+	body := &ResponseBodyProduct{
+		Message: "Product created",
+		Data:    &dt,
+		Error:   false,
+	}
+
+	w.WriteHeader(code)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(body)
+
+}
+
+func (p *ProductHandler) Patch(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+
+	var reqBody model.Product
+
+	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+		code := http.StatusBadRequest
+		body := &ResponseBodyProduct{
+			Message: "Bad Request : invalid request body",
+			Data:    nil,
+			Error:   true,
+		}
+
+		w.WriteHeader(code)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(body)
+	}
+
+	product := p.app.Patch(idStr, reqBody)
+	if product == nil {
+		http.NotFound(w, r)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(product)
+	return
+
 }

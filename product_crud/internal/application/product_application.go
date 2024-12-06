@@ -30,3 +30,11 @@ func (pa *ProductApplication) GetById(idStr string) *model.Product {
 func (pa *ProductApplication) Search(price float64) (filteredProducts []*model.Product, err error) {
 	return pa.ServiceProducts.Search(price)
 }
+
+func (pa *ProductApplication) Update(idStr string, product model.Product) *model.Product {
+	return pa.ServiceProducts.Update(idStr, product)
+}
+
+func (pa *ProductApplication) Patch(idStr string, product model.Product) *model.Product {
+	return pa.ServiceProducts.Patch(idStr, product)
+}

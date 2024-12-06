@@ -49,3 +49,44 @@ func (s *ServiceProducts) Search(price float64) (filteredProducts []*model.Produ
 	}
 	return filteredProducts, nil
 }
+
+func (s *ServiceProducts) Update(idStr string, product model.Product) *model.Product {
+	UpdatedProduct := s.GetById(idStr)
+	if UpdatedProduct == nil {
+		return nil
+	}
+	UpdatedProduct.Name = product.Name
+	UpdatedProduct.Quantity = product.Quantity
+	UpdatedProduct.Code_value = product.Code_value
+	UpdatedProduct.Is_published = product.Is_published
+	UpdatedProduct.Expiration = product.Expiration
+	UpdatedProduct.Price = product.Price
+
+	return UpdatedProduct
+}
+
+func (s *ServiceProducts) Patch(idStr string, product model.Product) *model.Product {
+	UpdatedProduct := s.GetById(idStr)
+	if UpdatedProduct == nil {
+		return nil
+	}
+	if product.Name != "" {
+		UpdatedProduct.Name = product.Name
+	}
+	if product.Code_value != "" {
+		UpdatedProduct.Code_value = product.Code_value
+	}
+	if product.Expiration != "" {
+		UpdatedProduct.Expiration = product.Expiration
+	}
+	if product.Is_published != UpdatedProduct.Is_published {
+		UpdatedProduct.Is_published = product.Is_published
+	}
+	if product.Quantity != 0 {
+		UpdatedProduct.Quantity = product.Quantity
+	}
+	if product.Price != 0 {
+		UpdatedProduct.Price = product.Price
+	}
+	return UpdatedProduct
+}

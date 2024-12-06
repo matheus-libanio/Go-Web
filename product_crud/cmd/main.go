@@ -18,7 +18,6 @@ func main() {
 	serv := service.NewServiceProducts(db)
 	app := application.NewApplicationProducts(serv)
 	handler := handler.NewProductHandler(app)
-	//ctrl := controller.NewControllerProducts(serv)
 
 	rt := chi.NewRouter()
 
@@ -28,14 +27,10 @@ func main() {
 		r.Get("/", handler.GetAll)
 		r.Get("/{id}", handler.GetById)
 		r.Get("/search", handler.Search)
+		r.Put("/{id}", handler.Update)
+		r.Patch("/{id}", handler.Patch)
+
 	})
-	/*
-		rt.Route("/products", func(r chi.Router) {
-			r.Post("/", ctrl.Create)
-			r.Get("/", ctrl.GetAll)
-			r.Get("/{id}", ctrl.GetById)
-			r.Get("/search", ctrl.Search)
-		})*/
 
 	log.Println("Iniciando servidor na porta 8080...")
 	if err := http.ListenAndServe(":8080", rt); err != nil {
