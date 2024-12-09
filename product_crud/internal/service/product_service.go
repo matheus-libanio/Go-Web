@@ -90,3 +90,17 @@ func (s *ServiceProducts) Patch(idStr string, product model.Product) *model.Prod
 	}
 	return UpdatedProduct
 }
+
+func (s *ServiceProducts) Delete(idStr string) (*model.Product, error) {
+	// Attempt to get the product
+	product := s.GetById(idStr)
+	if product == nil {
+		return nil, errors.New("product not found")
+	}
+	// Call the repository to delete the product
+	if err := s.Storage.Delete(idStr); err != nil {
+		return nil, err
+	}
+
+	return product, nil
+}

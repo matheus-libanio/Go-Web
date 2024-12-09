@@ -227,3 +227,18 @@ func (p *ProductHandler) Patch(w http.ResponseWriter, r *http.Request) {
 	return
 
 }
+
+func (p *ProductHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+
+	product, err := p.app.Delete(idStr)
+	if err != nil {
+		http.NotFound(w, r)
+	}
+
+	// Return a 200 OK with the deleted product details
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(product)
+	return
+
+}

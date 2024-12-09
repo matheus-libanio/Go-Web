@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"errors"
+
 	"github.com/matheus-libanio/Go-Web/product_crud/internal/model"
 )
 
@@ -18,4 +20,15 @@ func NewProductDB() RepositoryDB {
 	return RepositoryDB{
 		DB: make(map[string]*model.Product),
 	}
+}
+
+func (r *RepositoryDB) Delete(idStr string) error {
+	// Check if the product exists
+	if _, exists := r.DB[idStr]; !exists {
+		return errors.New("product not found")
+	}
+
+	// Delete the product
+	delete(r.DB, idStr)
+	return nil
 }

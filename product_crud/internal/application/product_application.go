@@ -38,3 +38,7 @@ func (pa *ProductApplication) Update(idStr string, product model.Product) *model
 func (pa *ProductApplication) Patch(idStr string, product model.Product) *model.Product {
 	return pa.ServiceProducts.Patch(idStr, product)
 }
+
+func (pa *ProductApplication) Delete(idStr string) (*model.Product, error) {
+	return pa.ServiceProducts.Delete(idStr)
+}
