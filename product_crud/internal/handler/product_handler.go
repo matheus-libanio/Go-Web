@@ -27,6 +27,12 @@ type ResponseBodyProduct struct {
 	Error   bool   `json:"error"`
 }
 
+type ResponseBodyAllProducts struct {
+	Message string  `json:"message"`
+	Data    []*Data `json:"data,omitempty"`
+	Error   bool    `json:"error"`
+}
+
 type Data struct {
 	Id           string  `json:"id"`
 	Name         string  `json:"name"`
@@ -122,8 +128,31 @@ func (p *ProductHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(body)
 
 	}
+
+	// Construa a resposta com a struct ResponseBodyProduct
+	responseData := make([]*Data, len(products)) // Alterei para um slice de Data
+
+	for i, product := range products {
+		responseData[i] = &Data{
+			Id:           product.Id, // Supondo que você tem um campo Id em seu modelo
+			Name:         product.Name,
+			Quantity:     product.Quantity,
+			Code_value:   product.Code_value,
+			Is_published: product.Is_published,
+			Expiration:   product.Expiration,
+			Price:        product.Price,
+		}
+	}
+
+	body := &ResponseBodyAllProducts{
+		Message: "success to get products",
+		Data:    responseData, // Atualizado para usar o Data corretamente
+		Error:   false,
+	}
+
+	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(products)
+	json.NewEncoder(w).Encode(body)
 
 }
 

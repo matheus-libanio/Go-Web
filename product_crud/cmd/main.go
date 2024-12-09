@@ -15,6 +15,11 @@ import (
 )
 
 func main() {
+	// load
+	err := godotenv.Load("../.env")
+	if err != nil {
+		log.Fatalf("err loading: %v", err)
+	}
 
 	db := repository.NewProductDB()
 	serv := service.NewServiceProducts(db)
@@ -44,11 +49,6 @@ func main() {
 // Middleware to check Access Token
 func checkAccessToken(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// load
-		err := godotenv.Load("../.env")
-		if err != nil {
-			log.Fatalf("err loading: %v", err)
-		}
 
 		// Obtem o token do header
 		token := r.Header.Get("Authorization")
