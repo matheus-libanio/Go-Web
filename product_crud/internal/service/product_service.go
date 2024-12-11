@@ -12,12 +12,11 @@ type ServiceProducts struct {
 }
 
 func (s *ServiceProducts) Create(product model.Product) (model.Product, error) {
-	product, err := s.Storage.Create(product)
+	productCreated, err := s.Storage.Create(product)
 	if err != nil {
 		return model.Product{}, err
 	}
-
-	return product, nil
+	return productCreated, nil
 }
 
 func NewServiceProducts(storage repository.RepositoryDB) *ServiceProducts {
@@ -35,7 +34,7 @@ func (s *ServiceProducts) GetAll() ([]*model.Product, error) {
 }
 
 func (s *ServiceProducts) GetById(idStr string) *model.Product {
-	return s.Storage.DB[idStr]
+	return s.Storage.GetById(idStr)
 }
 
 func (s *ServiceProducts) Search(price float64) (filteredProducts []*model.Product, err error) {
